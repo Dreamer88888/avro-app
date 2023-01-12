@@ -1,0 +1,54 @@
+server:
+  port: 9191
+
+spring:
+  application:
+    name: avro-producer
+  cloud:
+    vault:
+      enabled: true
+      kv:
+        backend: "https://eaas1.intra.bca.co.id:8200/v1/kv-kerberos/data"
+        enabled: true
+        application-name: avro-producer
+      authentication: APPROLE
+      app-role:
+        role-id: "3d614b9e-8c0b-2705-f8ce-caeadb076544"
+        secret-id: "dac5b7f3-10e6-349a-0090-fcc81c6bff54"
+        app-auth-path: approle
+      scheme: https
+      uri: https://eaas1.intra.bca.co.id:8200
+      ssl:
+        trust-store: file:src\main\resources\keytab\steven-spring-vault.jks
+        trust-store-password: changeit
+        trust-store-type: JKS
+        enabled-protocols: TLSv1.2,TLSv1.3
+        enabled-cipher-suites: TLS_AES_128_GCM_SHA256
+  config:
+    import: vault://
+
+  kafka:
+    producer:
+      bootstrap-servers: rhddspkaf01.cp.dti.co.id:9094,rhddspkaf02.cp.dti.co.id:9094,rhddspkaf03.cp.dti.co.id:9094
+      keySerializer: "org.apache.kafka.common.serialization.StringSerializer"
+      valueSerializer: "io.confluent.kafka.serializers.KafkaAvroSerializer"
+#      ssl:
+#        trust-store-location: 'file:src\main\resources\keytab\kafka_broker.truststore.jks'
+#        trust-store-password: 'cptruststorepass'
+    properties:
+      security:
+        protocol: SASL_SSL
+      schema:
+        registry:
+          url: https://rhddspsrg01.cp.dti.co.id:8081
+      ssl:
+        client.auth: true
+      auto:
+        register:
+          schemas: false
+
+logging.level.org.apache.kafka: DEBUG
+
+avro:
+  topic:
+    name: "TEST_STEVEN"
